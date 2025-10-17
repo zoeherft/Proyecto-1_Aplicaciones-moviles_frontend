@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FacadeService } from 'src/app/services/facade.service';
 import { Location } from '@angular/common';
+import { MaestrosService } from 'src/app/services/maestros.service';
+import { FacadeService } from 'src/app/services/facade.service';
 
 @Component({
   selector: 'app-registro-maestros',
@@ -23,7 +24,7 @@ export class RegistroMaestrosComponent implements OnInit {
   public errors:any = {};
   public editar:boolean = false;
   public token: string = "";
-  public idUser: Number = 0;
+  public idUser: number = 0;
 
 
   //Para el select
@@ -52,10 +53,25 @@ export class RegistroMaestrosComponent implements OnInit {
     private router: Router,
     private location : Location,
     public activatedRoute: ActivatedRoute,
+    private maestrosService: MaestrosService,
     private facadeService: FacadeService
   ) { }
 
   ngOnInit(): void {
+    if(this.activatedRoute.snapshot.params['id'] != undefined){
+      this.editar = true;
+      this.idUser = Number(this.activatedRoute.snapshot.params['id']);
+      this.maestro = { ...this.datos_user };
+      if(!Array.isArray(this.maestro.materias_json)){
+        this.maestro.materias_json = [];
+      }
+    }else{
+      this.maestro = this.maestrosService.esquemaMaestro();
+      this.maestro.rol = this.rol;
+      this.maestro.materias_json = [];
+      this.token = this.facadeService.getSessionToken();
+    }
+    console.log("Maestro:", this.maestro);
   }
 
   public regresar(){
@@ -63,10 +79,66 @@ export class RegistroMaestrosComponent implements OnInit {
   }
 
   public registrar(){
+    this.errors = {};
+    if(!Array.isArray(this.maestro.materias_json)){
+      this.maestro.materias_json = [];
+    }
+    this.errors = this.maestrosService.validarMaestro(this.maestro, this.editar);
+    if(Object.keys(this.errors).length > 0){
+      return;
+    }
+
+    if(this.maestro.password !== this.maestro.confirmar_password){
+      alert('Las contrasenas no coinciden');
+      return;
+    }
+
+    this.maestrosService.registrarMaestro(this.maestro).subscribe({
+      next: (response:any) => {
+        alert('Maestro registrado con exito');
+        console.log('Maestro registrado', response);
+        if(this.token != ""){
+          this.router.navigate(['maestro']);
+        }else{
+          this.router.navigate(['/']);
+        }
+      },
+      error: (error:any) => {
+        if(error.status === 422){
+          this.errors = error.error.errors;
+        }else{
+          alert('Error al registrar el maestro');
+        }
+      }
+    });
 
   }
 
   public actualizar(){
+    if(!this.idUser){
+      return;
+    }
+
+    this.errors = {};
+    this.errors = this.maestrosService.validarMaestro(this.maestro, this.editar);
+    if(Object.keys(this.errors).length > 0){
+      return;
+    }
+
+    this.maestrosService.actualizarMaestro(this.idUser, this.maestro).subscribe({
+      next: (response:any) => {
+        alert('Maestro actualizado con exito');
+        console.log('Maestro actualizado', response);
+        this.router.navigate(['maestro']);
+      },
+      error: (error:any) => {
+        if(error.status === 422){
+          this.errors = error.error.errors;
+        }else{
+          alert('Error al actualizar el maestro');
+        }
+      }
+    });
 
   }
 
@@ -109,14 +181,19 @@ export class RegistroMaestrosComponent implements OnInit {
   public checkboxChange(event:any){
     console.log("Evento: ", event);
     if(event.checked){
+      if(!Array.isArray(this.maestro.materias_json)){
+        this.maestro.materias_json = [];
+      }
       this.maestro.materias_json.push(event.source.value)
     }else{
       console.log(event.source.value);
-      this.maestro.materias_json.forEach((materia, i) => {
-        if(materia == event.source.value){
-          this.maestro.materias_json.splice(i,1)
-        }
-      });
+      if(Array.isArray(this.maestro.materias_json)){
+        this.maestro.materias_json.forEach((materia, i) => {
+          if(materia == event.source.value){
+            this.maestro.materias_json.splice(i,1)
+          }
+        });
+      }
     }
     console.log("Array materias: ", this.maestro);
   }
