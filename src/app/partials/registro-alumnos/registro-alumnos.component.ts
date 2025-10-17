@@ -154,4 +154,17 @@ export class RegistroAlumnosComponent implements OnInit {
     }
   }
 
+  public soloAlfanumerico(event: KeyboardEvent) {
+    if (event.key.length === 1 && !/[a-zA-Z0-9]/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  public sanitizarCampo(campo: 'matricula' | 'curp' | 'rfc') {
+    const valor = this.alumno[campo];
+    if (typeof valor === 'string') {
+      this.alumno[campo] = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    }
+  }
+
 }

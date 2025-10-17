@@ -9,7 +9,7 @@
 
       <mat-form-field class="mat-input" appearance="outline">
         <mat-label>ID de trabajador</mat-label>
-        <input matInput [(ngModel)]="maestro.id_trabajador" mask="000000000" name="id" placeholder="Escribe ID de trabajador">
+        <input matInput [(ngModel)]="maestro.id_trabajador" name="id" maxlength="10" placeholder="Escribe ID de trabajador" style="text-transform: uppercase;" (keypress)="soloAlfanumerico($event)" (input)="sanitizarCampo('id_trabajador')">
       </mat-form-field>
       <div *ngIf="errors.id_trabajador" class="invalid-feedback">{{ errors.id_trabajador }}</div>
 
@@ -62,7 +62,7 @@
 
       <mat-form-field class="mat-input mat-hint-margin" appearance="outline">
           <mat-label>RFC</mat-label>
-          <input matInput minlength="12" maxlength="13" [(ngModel)]="maestro.rfc" placeholder="Escribe RFC" style="text-transform: uppercase;">
+          <input matInput minlength="12" maxlength="13" [(ngModel)]="maestro.rfc" placeholder="Escribe RFC" style="text-transform: uppercase;" (keypress)="soloAlfanumerico($event)" (input)="sanitizarCampo('rfc')">
           <mat-hint align="end">{{maestro.rfc?.length || 0}}/13</mat-hint>
       </mat-form-field>
       <div *ngIf="errors.rfc" class="invalid-feedback">{{ errors.rfc }}</div>

@@ -222,4 +222,16 @@ export class RegistroMaestrosComponent implements OnInit {
       event.preventDefault();
     }
   }
+  public soloAlfanumerico(event: KeyboardEvent) {
+    if (event.key.length === 1 && !/[a-zA-Z0-9]/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  public sanitizarCampo(campo: 'id_trabajador' | 'rfc') {
+    const valor = this.maestro[campo];
+    if (typeof valor === 'string') {
+      this.maestro[campo] = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    }
+  }
 }

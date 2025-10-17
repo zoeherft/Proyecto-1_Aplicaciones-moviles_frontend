@@ -43,6 +43,10 @@ export class MaestrosService {
 
     if (!this.validatorService.required(data['id_trabajador'])) {
       error['id_trabajador'] = this.errorService.required;
+    } else if (!this.validatorService.max(data['id_trabajador'], 10)) {
+      error['id_trabajador'] = this.errorService.max(10);
+    } else if (!/^[A-Za-z0-9]+$/.test(data['id_trabajador'])) {
+      error['id_trabajador'] = 'Solo se permiten letras y numeros';
     }
 
     if (!this.validatorService.required(data['first_name'])) {
@@ -89,6 +93,8 @@ export class MaestrosService {
     } else if (!this.validatorService.max(data['rfc'], 13)) {
       error['rfc'] = this.errorService.max(13);
       alert('La longitud de caracteres del RFC es mayor, deben ser 13');
+    } else if (!/^[A-Za-z0-9]+$/.test(data['rfc'])) {
+      error['rfc'] = 'Solo se permiten letras y numeros';
     }
 
     if (!this.validatorService.required(data['cubiculo'])) {

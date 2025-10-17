@@ -43,6 +43,10 @@ export class AlumnosService {
 
     if (!this.validatorService.required(data['matricula'])) {
       error['matricula'] = this.errorService.required;
+    } else if (!this.validatorService.max(data['matricula'], 10)) {
+      error['matricula'] = this.errorService.max(10);
+    } else if (!/^[A-Za-z0-9]+$/.test(data['matricula'])) {
+      error['matricula'] = 'Solo se permiten letras y numeros';
     }
 
     if (!this.validatorService.required(data['first_name'])) {
@@ -85,6 +89,8 @@ export class AlumnosService {
     } else if (!this.validatorService.max(data['curp'], 18)) {
       error['curp'] = this.errorService.max(18);
       alert('La longitud de caracteres del CURP es mayor, deben ser 18');
+    } else if (!/^[A-Za-z0-9]+$/.test(data['curp'])) {
+      error['curp'] = 'Solo se permiten letras y numeros';
     }
 
     if (!this.validatorService.required(data['rfc'])) {
@@ -95,6 +101,8 @@ export class AlumnosService {
     } else if (!this.validatorService.max(data['rfc'], 13)) {
       error['rfc'] = this.errorService.max(13);
       alert('La longitud de caracteres del RFC es mayor, deben ser 13');
+    } else if (!/^[A-Za-z0-9]+$/.test(data['rfc'])) {
+      error['rfc'] = 'Solo se permiten letras y numeros';
     }
 
     if (!this.validatorService.required(data['edad'])) {
