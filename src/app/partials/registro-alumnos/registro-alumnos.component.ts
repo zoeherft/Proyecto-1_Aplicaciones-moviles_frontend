@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { AlumnosService } from 'src/app/services/alumnos.service';
-import { FacadeService } from 'src/app/services/facade.service';
 
 @Component({
   selector: 'app-registro-alumnos',
@@ -28,59 +27,54 @@ export class RegistroAlumnosComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private location: Location,
+    private location : Location,
     public activatedRoute: ActivatedRoute,
-    private alumnosService: AlumnosService,
-    private facadeService: FacadeService
+    private alumnosService: AlumnosService
   ) { }
 
   ngOnInit(): void {
-    if (this.activatedRoute.snapshot.params['id'] != undefined) {
-      this.editar = true;
-      this.idUser = Number(this.activatedRoute.snapshot.params['id']);
-      this.alumno = { ...this.datos_user };
-    } else {
-      this.alumno = this.alumnosService.esquemaAlumno();
-      this.alumno.rol = this.rol;
-      this.token = this.facadeService.getSessionToken();
-    }
-    console.log('Alumno:', this.alumno);
+    this.alumno = this.alumnosService.esquemaAlumno();
+    // Rol del usuario
+    this.alumno.rol = this.rol;
+
+    console.log("Datos alumno: ", this.alumno);
   }
 
   public regresar() {
     this.location.back();
   }
 
-  public registrar() {
+  public registrar(){
+    //Validamos si el formulario está lleno y correcto
     this.errors = {};
     this.errors = this.alumnosService.validarAlumno(this.alumno, this.editar);
-    if (Object.keys(this.errors).length > 0) {
-      return;
+    if(Object.keys(this.errors).length > 0){
+      return false;
     }
-
-    if (this.alumno.password !== this.alumno.confirmar_password) {
-      alert('Las contrasenas no coinciden');
-      return;
+    // Lógica para registrar un nuevo alumno
+    if(this.alumno.password == this.alumno.confirmar_password){
+      this.alumnosService.registrarAlumno(this.alumno).subscribe(
+        (response) => {
+          // Redirigir o mostrar mensaje de éxito
+          alert("Alumno registrado exitosamente");
+          console.log("Alumno registrado: ", response);
+          if(this.token && this.token !== ""){
+            this.router.navigate(["alumnos"]);
+          }else{
+            this.router.navigate(["/"]);
+          }
+        },
+        (error) => {
+          // Manejar errores de la API
+          alert("Error al registrar alumno");
+          console.error("Error al registrar alumno: ", error);
+        }
+      );
+    }else{
+      alert("Las contraseñas no coinciden");
+      this.alumno.password="";
+      this.alumno.confirmar_password="";
     }
-
-    this.alumnosService.registrarAlumno(this.alumno).subscribe({
-      next: (response: any) => {
-        alert('Alumno registrado con exito');
-        console.log('Alumno registrado', response);
-        if (this.token != '') {
-          this.router.navigate(['alumno']);
-        } else {
-          this.router.navigate(['/']);
-        }
-      },
-      error: (error: any) => {
-        if (error.status === 422) {
-          this.errors = error.error.errors;
-        } else {
-          alert('Error al registrar el alumno');
-        }
-      }
-    });
   }
 
   public actualizar() {
